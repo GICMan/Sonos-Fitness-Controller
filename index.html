@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            $(function () {
+                var socket = io();
+                var data;
+
+                $('.selectRoom').click(function(){
+                    socket.emit('roomCode', $('input').val(), function(res){
+                        if(res == true){
+                            socket.emit('getPlaylists');
+
+                            socket.on('playlists', function(data){
+                                $(".playlists").empty();
+                                for(var i = 0;i < data.length; i++){
+                                    $(".playlists").append("<li>" + data[i] + "</li>");
+                                }
+
+                                $("li").click(function(){
+                                    var playlist = $(this).text();
+                                    socket.emit('select', playlist);
+                                });
+                            });
+
+                            $(".controller-cont").removeClass("hide");
+
+                            $(".roomSelector-cont").addClass("hide");
+
+                            $(".pause").click(function(){
+                                socket.emit('pause');
+                            });
+                            $(".play").click(function(){
+                                socket.emit('play');
+                            });
+                            $(".next").click(function(){
+                                socket.emit('next');
+                            });
+                            $(".prev").click(function(){
+                                socket.emit('prev');
+                            });
+                        }else{
+                            $("p").removeClass("hide");
+                        }
+                    });
+                });
+            });
+
+        </script>
+
+        <style>
+            h1{
+                cursor: pointer;
+            }
+            .hide {
+                display: none;
+            }
+            p {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="controller-cont hide">
+            <button type="button" class="prev">previous</button>
+            <button type="button" class="pause">pause</button>
+            <button type="button" class="play">play</button>
+            <button type="button" class="next">next</button>
+            <ul class="playlists">
+
+            </ul>
+        </div>
+
+        <div class="roomSelector-cont">
+            <input type="text" value="Room Code">
+            <button type="button" class="selectRoom">Go</button>
+            <p class="hide">Invalid Room Code</p>
+        </div>
+    </body>
+</html>
